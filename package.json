@@ -1,0 +1,17 @@
+{
+  "name": "docker_web_app",
+  "version": "1.0.0",
+  "description": "Node.js on Docker",
+  "author": "",
+  "main": "index.js",
+  "scripts": {
+    "start_dev": "nodemon index.js -p 9000"
+  },
+  "dependencies": {
+    "express": "^4.16.1",
+    "fs": "^0.0.1-security",
+    "https": "^1.0.0",
+    "nodemon": "^2.0.15",
+    "socket.io": "^4.5.2"
+  }
+}

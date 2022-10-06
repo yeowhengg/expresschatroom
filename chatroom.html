@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+</head>
+
+<body>
+    <style>
+        #container {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            width: 50%;
+        }
+
+        #box {
+            border: 5px outset black;
+            height: 200px;
+            width: 200px;
+        }
+
+        #box2 {
+            border: 5px outset black;
+            height: 100px;
+            width: 200px;
+        }
+
+        #you{
+            text-align: right;
+            color: blue;
+        }
+
+        #other{
+            text-align: left;
+        }
+    </style>
+
+    <div id="container">
+        <div id="box">
+        </div>
+
+        <div id="box2">
+            Users connected:
+            
+        </div>
+
+        <form id="nameform" action="">
+            enter your name: <input type="text" name="name" id="tbName">
+            <input type="submit" id="submitname" value="Enter">
+        </form>
+        
+
+        <form id="form" action="">
+            Enter a msg: <input type="text" name="msg" id="tbMsg">
+            <input type="submit" id="submit" value="Submit">
+            <p id = "typing"></p>
+
+        </form>
+    </div>
+
+    <script src="/socket.io/socket.io.js"> //creates a socket on client side and binds to them</script>
+
+    <script>
+        var socket = io();
+        var form = document.getElementById("form");
+        var nameform = document.getElementById("nameform"); 
+        var nameinput = document.getElementById("tbName");
+        var msginput = document.getElementById("tbMsg");
+        var msgbox = document.getElementById("box");
+        var namebox = document.getElementById("box2");
+        var rightside = document.getElementById("you");
+        var leftside = document.getElementById("other");
+        var clientId = "";
+        prerequisite();
+
+        msginput.addEventListener('keypress', whoIsTyping);
+
+        function whoIsTyping(){
+            socket.emit('typing', nameinput.value);
+            socket.on('typing', (msg) => {
+                var isTyping = document.getElementById('typing');
+                isTyping.innerHTML = `${msg} is typing...`;
+            });
+        }
+            
+
+        form.addEventListener('submit', function (e) { // when submit button is pressed
+            e.preventDefault(); // prevents page reload
+            if (msginput.value)//checks if its not empty
+            {
+                socket.emit('chat message', msginput.value); //send msg to server
+                msginput.value = "";
+            }
+            
+        });
+
+        socket.on('chat message', function (msg) { // listens for incoming message
+            var item = document.createElement('p');
+            item.textContent = msg.sentChat;
+            clientId = msg.whoSent;
+
+            if(clientId == socket.id){
+                item.setAttribute("id", "you");
+            }else{
+                item.setAttribute("id", "other");
+            }
+
+            msgbox.appendChild(item);
+           
+        });
+
+        function prerequisite() {
+
+            form.style.visibility = "hidden";
+
+            socket.on('name', (name) => {
+                    var item2 = document.createElement('p');
+                    item2.textContent = name.name;
+
+                    if(name.socketid == socket.id){
+                        item2.style.backgroundColor = "yellow";
+                        var yourName = document.createTextNode(" <- you");
+                        item2.appendChild(yourName);
+                    }
+                    namebox.appendChild(item2);
+                });
+
+            
+            nameform.addEventListener('submit', function (e) {
+            e.preventDefault();
+
+                if (nameinput.value) {
+                    socket.emit('name', nameinput.value);
+                    nameform.parentNode.removeChild(nameform);
+                    form.style.visibility = "visible";
+                }
+
+            });
+        }
+    
+    </script>
+
+</body>
+
+</html>
